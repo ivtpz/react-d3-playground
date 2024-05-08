@@ -14,6 +14,7 @@ interface Node {
   id : string;
   name : string;
   type : string;
+  docstring : string;
 }
 
 interface Edge {
@@ -39,21 +40,35 @@ function Graph(nodes: Array<Node>, edges : Array<Edge>) {
     graphviz("#graph", { ...defaultOptions, zoom : true })
       .renderDot(mkDot(nodes, edges))
       .on("end", () => {
-        d3.selectAll<SVGAElement, unknown>("#graph g.node")
-          .on("click", function(event: MouseEvent) {
+        d3.selectAll<SVGAElement, unknown>("#graph g.node").each(function() {
+          const gNode = d3.select(this);
+
+          // Set it up so that clicking anywhere in the node works.
+          gNode.attr("pointer-events","fill");
+
+          // Add click handler.
+          gNode.on("click", function(event) {
             event.stopPropagation();
             const nodeId = d3.select(this).attr("id");
-            const node = nodeMap.get(nodeId)
+            const node = nodeMap.get(nodeId);
+            const nodeInfo = d3.select("#node-info")
             if (node) {
-              d3.select("#node-info").text(`Node Type: ${node.type}`);
+              nodeInfo.html('');
+              nodeInfo.append("div").text(`Name: ${node.name}`);
+              nodeInfo.append("div").text(`Type: ${node.type}`);
+              nodeInfo.append("div").text(`Docstring: ${node.docstring}`);
             };
           });
+        });
 
-          d3.select(document).on("click", () => {
-            d3.select("#node-info").text("Node information will appear here.");
-          });
+        // Click handler for anywhere outside the graph.
+        d3.select(document).on("click", () => {
+          const nodeInfo = d3.select("#node-info")
+          nodeInfo.html('');
+          nodeInfo.text("Node information will appear here.");
+        });
       });
-  }, []);
+  }, [nodes, edges]);
   return (
     <div className="App">
       <div id="graph"></div>
@@ -63,9 +78,9 @@ function Graph(nodes: Array<Node>, edges : Array<Edge>) {
 }
 
 const nodes : Array<Node> = [
-  { id : "idA", name : "A", type : "tpA" },
-  { id : "idB", name : "B", type : "tpB" },
-  { id : "idC", name : "C", type : "tpC" },
+  { id : "idA", name : "A", type : "tpA", docstring : "docA" },
+  { id : "idB", name : "B", type : "tpB", docstring : "docB" },
+  { id : "idC", name : "C", type : "tpC", docstring : "docC" },
 ]
 
 const edges : Array<Edge> = [
