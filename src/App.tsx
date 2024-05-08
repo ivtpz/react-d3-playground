@@ -1,7 +1,11 @@
+import * as React from "react";
+import { createRoot } from "react-dom/client";
 import { useEffect } from "react";
-import * as d3 from 'd3'
+import * as d3 from 'd3';
 import { graphviz, GraphvizOptions } from 'd3-graphviz';
 import "./App.css";
+import katex from "katex";
+import renderMathInElement, { RenderMathInElementOptions } from "katex/contrib/auto-render"
 
 const defaultOptions: GraphvizOptions = {
   fit: true,
@@ -33,6 +37,28 @@ function mkDot(nodes : Array<Node>, edges : Array<Edge>) : string {
   return out + "\n}"
 }
 
+function KatexComponent({ text }: { text: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (containerRef.current) {
+      // Directly set the innerHTML
+      containerRef.current.innerHTML = text;
+      // Render math within the element
+      renderMathInElement(containerRef.current, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false },
+          { left: '\\(', right: '\\)', display: false },
+          { left: '\\[', right: '\\]', display: true }
+        ],
+        throwOnError: false
+      });
+    }
+  }, [text]);
+
+  return <div ref={containerRef} />;
+}
+
 function Graph(nodes: Array<Node>, edges : Array<Edge>) {
   const nodeMap = new Map(nodes.map(node => [node.id, node]))
 
@@ -56,7 +82,9 @@ function Graph(nodes: Array<Node>, edges : Array<Edge>) {
               nodeInfo.html('');
               nodeInfo.append("div").text(`Name: ${node.name}`);
               nodeInfo.append("div").text(`Type: ${node.type}`);
-              nodeInfo.append("div").text(`Docstring: ${node.docstring}`);
+              const docstringDiv = nodeInfo.append("div").node() as HTMLDivElement;
+              const root = createRoot(docstringDiv);
+              root.render(<KatexComponent text={node.docstring} />);
             };
           });
         });
@@ -78,9 +106,9 @@ function Graph(nodes: Array<Node>, edges : Array<Edge>) {
 }
 
 const nodes : Array<Node> = [
-  { id : "idA", name : "A", type : "tpA", docstring : "docA" },
-  { id : "idB", name : "B", type : "tpB", docstring : "docB" },
-  { id : "idC", name : "C", type : "tpC", docstring : "docC" },
+  { id : "idA", name : "A", type : "tpA", docstring : "A is $A + B = C$" },
+  { id : "idB", name : "B", type : "tpB", docstring : "B" },
+  { id : "idC", name : "C", type : "tpC", docstring : "C" },
 ]
 
 const edges : Array<Edge> = [
