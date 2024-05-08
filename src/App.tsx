@@ -1,9 +1,7 @@
-import { useEffect, useRef } from "react";
-import * as React from "react";
+import { useEffect } from "react";
 import * as d3 from 'd3'
 import { graphviz, GraphvizOptions } from 'd3-graphviz';
 import "./App.css";
-import { StringLiteral } from "typescript";
 
 const defaultOptions: GraphvizOptions = {
   fit: true,
@@ -22,17 +20,6 @@ interface Edge {
   target : string
 }
 
-const nodes : Array<Node> = [
-  { id : "idA", name : "A" },
-  { id : "idB", name : "B" },
-  { id : "idC", name : "C" },
-]
-
-const edges : Array<Edge> = [
-  { source : "idA", target : "idB" },
-  { source : "idC", target : "idB" },
-]
-
 function mkDot(nodes : Array<Node>, edges : Array<Edge>) : string {
   var out = "digraph {\n"
   nodes.forEach((e) => 
@@ -44,7 +31,7 @@ function mkDot(nodes : Array<Node>, edges : Array<Edge>) : string {
   return out + "\n}"
 }
 
-function App() {
+function Graph(nodes: Array<Node>, edges : Array<Edge>) {
   useEffect(() => {
     graphviz("#graph", { ...defaultOptions, zoom : true })
       .renderDot(mkDot(nodes, edges))
@@ -67,6 +54,21 @@ function App() {
       <div id="node-info">Node information will appear here.</div>
     </div>
   );
+}
+
+const nodes : Array<Node> = [
+  { id : "idA", name : "A" },
+  { id : "idB", name : "B" },
+  { id : "idC", name : "C" },
+]
+
+const edges : Array<Edge> = [
+  { source : "idA", target : "idB" },
+  { source : "idC", target : "idB" },
+]
+
+function App() {
+  return Graph(nodes, edges);
 }
 
 export default App;
