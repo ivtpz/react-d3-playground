@@ -13,6 +13,7 @@ const defaultOptions: GraphvizOptions = {
 interface Node {
   id : string;
   name : string;
+  type : string;
 }
 
 interface Edge {
@@ -32,6 +33,8 @@ function mkDot(nodes : Array<Node>, edges : Array<Edge>) : string {
 }
 
 function Graph(nodes: Array<Node>, edges : Array<Edge>) {
+  const nodeMap = new Map(nodes.map(node => [node.id, node]))
+
   useEffect(() => {
     graphviz("#graph", { ...defaultOptions, zoom : true })
       .renderDot(mkDot(nodes, edges))
@@ -40,7 +43,10 @@ function Graph(nodes: Array<Node>, edges : Array<Edge>) {
           .on("click", function(event: MouseEvent) {
             event.stopPropagation();
             const nodeId = d3.select(this).attr("id");
-            d3.select("#node-info").text(`Node ID: ${nodeId}`);
+            const node = nodeMap.get(nodeId)
+            if (node) {
+              d3.select("#node-info").text(`Node Type: ${node.type}`);
+            };
           });
 
           d3.select(document).on("click", () => {
@@ -57,9 +63,9 @@ function Graph(nodes: Array<Node>, edges : Array<Edge>) {
 }
 
 const nodes : Array<Node> = [
-  { id : "idA", name : "A" },
-  { id : "idB", name : "B" },
-  { id : "idC", name : "C" },
+  { id : "idA", name : "A", type : "tpA" },
+  { id : "idB", name : "B", type : "tpB" },
+  { id : "idC", name : "C", type : "tpC" },
 ]
 
 const edges : Array<Edge> = [
