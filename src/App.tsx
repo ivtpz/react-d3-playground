@@ -1,74 +1,37 @@
-// @ts-nocheck
 import { useEffect, useRef } from "react";
+import * as React from "react";
+import * as d3 from 'd3'
+import { graphviz, GraphvizOptions } from 'd3-graphviz';
 import "./App.css";
-import ForceGraph from "./ForceGraph";
 
-var nodes = [
-  {
-    id: 0,
-    name: "A",
-  },
-  {
-    id: 1,
-    name: "B",
-  },
-  {
-    id: 2,
-    name: "C",
-  },
-  {
-    id: 3,
-    name: "D",
-  },
-  {
-    id: 4,
-    name: "E",
-  },
-];
-
-var edges = [
-  [1, 2],
-  [1, 3],
-  [2, 4],
-  [3, 4],
-];
+const defaultOptions: GraphvizOptions = {
+  fit: true,
+  height: 500,
+  width: 500,
+  zoom: false,
+};
 
 function App() {
-  const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    if (ref.current) {
-      const graph = ForceGraph(
-        {
-          nodes: [
-            { id: "Alice", group: 2 },
-            { id: "Bob", group: 1 },
-            { id: "Carol", group: 1 },
-            { id: "David", group: 2 },
-          ],
-          links: [
-            { source: "Bob", target: "Alice", value: 1 },
-            { source: "Carol", target: "Bob", value: 2 },
-            { source: "David", target: "Alice", value: 3 },
-          ],
-        },
-        {
-          nodeId: (d) => d.id,
-          nodeGroup: (d) => d.group,
-          nodeTitle: (d) => `${d.id}\n${d.group}`,
-          linkStrokeWidth: (l) => Math.sqrt(l.value),
-          width: 600,
-          height: 600,
-          nodeRadius: 10,
-        }
-      );
-      ref.current.innerHTML = "";
-      ref.current.appendChild(graph);
-    }
+    graphviz("#graph", { ...defaultOptions, zoom : true })
+      .renderDot("digraph {A [id=\"idA\"]; B [id=\"idB\"] A -> B;}")
+      .on("end", () => {
+        d3.selectAll<SVGAElement, unknown>("#graph g.node")
+          .on("click", function(event: MouseEvent) {
+            event.stopPropagation();
+            const nodeId = d3.select(this).attr("id");
+            d3.select("#node-info").text(`Node ID: ${nodeId}`);
+          });
+
+          d3.select(document).on("click", () => {
+            d3.select("#node-info").text("Node information will appear here.");
+          });
+      });
   }, []);
   return (
     <div className="App">
-      <div ref={ref}></div>
+      <div id="graph"></div>
+      <div id="node-info">Node information will appear here.</div>
     </div>
   );
 }
