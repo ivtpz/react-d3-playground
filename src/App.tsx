@@ -1,24 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useRef } from "react";
+import "./App.css";
+import * as d3 from "d3";
 
 function App() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (ref.current) {
+      d3.select(ref.current).selectAll("svg").remove();
+      d3.select(ref.current)
+        .append("svg")
+        .attr("width", 800)
+        .attr("height", 600)
+        .append("circle")
+        .attr("cx", 150)
+        .attr("cy", 70)
+        .attr("r", 50)
+        .style("fill", "red");
+    }
+  }, []);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div ref={ref}></div>
     </div>
   );
 }
